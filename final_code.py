@@ -102,8 +102,12 @@ def this_is_it(dic):
         fig,ax = plt.subplots()
         for key,values in group2:
             group2.plot(values['dilution'], 'ABA', label = key,ax = ax, logy = True)
-            print(i, '-------------',list(j['ABA']))
-            fig.suptitle(i,fontsize= 14,fontweight = 'bold')
+            # print(i, '-------------',list(j['ABA']), j['Age'][:1])
+            plt.ylabel('Intensity',fontsize= 14,fontweight = 'bold')
+            print(list_of_columns)
+            plt.xlabel('Dilution',fontsize = 14,fontweight = 'bold')
+            x = '{}({} {} {}) {}'.format(i,j.iloc[0]['Gender'],j.iloc[0]['Age'], j.iloc[0]['Hospital '],'ABA' )
+            fig.suptitle(x,fontsize= 14,fontweight = 'bold')
     plt.show()
 
 
