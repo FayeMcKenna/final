@@ -123,3 +123,47 @@ def graph_production(dic):
 
 
 graph_production(new_columns)
+
+# Step5 function
+def filefunc(filedata,coldata):
+    data = pd.read_excel(filedata, header=1, sheetname=None) #read in data excel sep filename column name
+    for h in range(0, len(data)): #for each sheet in excel
+        PIDl = [] #empty list to get PIDL
+        vl = [] #empty list to get vl
+        dill = [] #empty list to get dill
+
+        get_key = list(data.keys())[h] #go through sample IDs
+        for g in data[get_key].loc[:, coldata]: #for the visit in the data
+            key1 = re.compile('[V][1-3]') #get the dilusion
+            key2 = key1.search(g)
+            key3 = re.compile('100*(?![1-9]|[ ][A-Z])')
+            key4 = key3.search(g) #get the patient ID
+            key5 = re.compile(
+                '\A(Standard[1-9]?|Healthy[ ][A-Z][A-Z].?|[0-9][0-9]+(?![ ][A-Z][A-Z]+)|.*(?=[ ][V][1-3]))')
+            key6 = key5.search(g) #if exists add match to list
+            if key2 is not None:
+                key2.append(key2.group())
+            else:
+                key2.append(np.nan)
+            if key4 is not None:
+                key4.append(key4.group())
+            else:
+                key4.append(np.nan)
+            if key6 is not None:
+                key6.append(key6.group())
+            else:
+                key6.append(np.nan)
+            re.purge() #purge 
+        data[get_key].insert(loc=1, column='PatientID', value=PIDl) #add lists to data df
+        data[get_key].insert(loc=2, column='Replicate/visit', value=vl)
+        data[get_key].insert(loc=3, column='Dilution', value=dill)
+        try: #try to get missing data
+            data[get_key]['Hospital '] = data[get_key].groupby('PatientID')['Hospital '].ffill()
+            data[get_key]['Age'] = data[get_key].groupby('PatientID')['Age'].ffill()
+            data[get_key]['Gender'] = data[get_key].groupby('PatientID')['Gender'].ffill()
+        except KeyError:
+            pass #save each file as txt
+        data[get_key].to_csv(get_key +'.txt',sep='\t')
+
+#run function
+filefunc('Assignment4/06222016 Staph Array Data.xlsx', 'sampleid') # whats our sampid name variable?
