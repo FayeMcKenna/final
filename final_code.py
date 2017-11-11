@@ -1,5 +1,5 @@
-#course final- Jonathan Abebe, Faye Mckenna, Sandra India
-#pseudo code
+#course final
+#psuedo code
 
 #data sheet plot dilusion versus intensity from staph array data via line graph
 #1 read sheet in via panda
@@ -10,6 +10,8 @@
 from collections import defaultdict
 import pandas as pd
 import re
+import sys
+%matplotlib inline
 import numpy as np
 import xlrd
 import matplotlib.pyplot as plt
@@ -90,6 +92,7 @@ new_columns = matching(new_sheets)
 
 
 def graph_production(dic):
+    # ITERATE OVER plates and you will have all of them!
     '''Creates a graph with y being the value and x being the dilution'''
     plots = dic['Plate 1'] #Considering only plate 1 in the dictionary for ease of testing
     group = plots.groupby('patient_id') #Groups by the patient ID
@@ -99,27 +102,17 @@ def graph_production(dic):
     col_to_plot = cols_dropped_NaN.columns #Extracts all the column names and saves it to a variable
     for i,j in group: #For loops through the grouped dataframe
         group2 = j.groupby('replicate') #Groups by the replicate (V1,V2,V3..)
-        for key,values in group2: #Goes through the keys (V1,V2,V3) and the corresponding values
-            for l in lst: #Goes through the list of columns you want to print, lst is for testing, col_to_plot is the final list
-                fig, ax = plt.subplots()
-                group2.plot(values['dilution'], l,label = key,ax = ax, logy = True)
-                plt.ylabel('Intensity',fontsize= 14,fontweight = 'bold')
-                plt.xlabel('Dilution',fontsize = 14,fontweight = 'bold')
-                if i != 'Standard': #If the sample is not a standard the title becomes the gender, age and hospital, formatted
-                    title = '{}({} {} {}) {}'.format(i,j.iloc[0]['Gender'],j.iloc[0]['Age'], j.iloc[0]['Hospital '],l )
-                else: #else it just becomes the Standard
-                    title = 'Standard'
-                fig.suptitle(title,fontsize= 14,fontweight = 'bold')
-    plt.show()
+        for l in lst: #Goes through the list of columns you want to print, lst is for testing, col_to_plot is the final list
+            fig, ax = plt.subplots()
+            for key,values in group2: #Goes through the keys (V1,V2,V3) and the corresponding values
+                values.plot('dilution', l, label = key,ax = ax, logy = True)
+            plt.ylabel('Intensity',fontsize= 14,fontweight = 'bold')
+            plt.xlabel('Dilution',fontsize = 14,fontweight = 'bold')
 
-# Things to fix before moving on
-# Fix the legends, instead of the correct replciates i.e V1,V2,V3 it prints the same thing over and  over i.e V1 V1 V1
-# also sometimes it prints the name of the column in the legends.
-
-# Once the legend thing is figured out then make another function that goes through all of the plates and applies
-# the graph_production function on them
-
-
-
-
-graph_production(new_columns)
+            if i != 'Standard': #If the sample is not a standard the title becomes the gender, age and hospital, formatted
+                title = '{}({} {} {}) {}'.format(i,j.iloc[0]['Gender'],j.iloc[0]['Age'], j.iloc[0]['Hospital '],l )
+            else: #else it just becomes the Standard
+                title = 'Standard'
+            fig.suptitle(title,fontsize= 14,fontweight = 'bold')
+            plt.show()
+    
