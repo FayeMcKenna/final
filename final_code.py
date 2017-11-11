@@ -92,7 +92,7 @@ new_columns = matching(new_sheets)
 
 
 def graph_production(dic):
-    # ITERATE OVER plates and you will have all of them!
+    # ITERATE OVER plates to have all of them!
     '''Creates a graph with y being the value and x being the dilution'''
     plots = dic['Plate 1'] #Considering only plate 1 in the dictionary for ease of testing
     group = plots.groupby('patient_id') #Groups by the patient ID
@@ -115,4 +115,7 @@ def graph_production(dic):
                 title = 'Standard'
             fig.suptitle(title,fontsize= 14,fontweight = 'bold')
             plt.show()
+            
+            
+graph_production(new_columns)
     
