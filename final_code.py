@@ -123,4 +123,62 @@ def graph_production(dic):
 
 
 # graph_production(new_columns)
+
+#step 5
+
+def filefunc(filedata,coldata):
+    '''decompose sample ID & fill in gap values'''
+    # Read in Excel according tp filename & interested column name
+    data = pd.read_excel(filedata, header=1, sheetname=None)
+    # For the sheets in Excel
+    for h in range(0, len(data)):
+        # Empty lists to contain parse results & get Keys
+        PIDl = []
+        vl = []
+        dill = []
+
+        get_key = list(data.keys())[h]
+        # Parse Sample ID
+        for g in data[get_key].loc[:, coldata]:
+            # Get Visit
+            key1 = re.compile('[V][1-3]')
+            key2 = key1.search(g)
+            # Get Dilution
+            key3 = re.compile('100*(?![1-9]|[ ][A-Z])')
+            key4 = key3.search(g)
+            # Get patient ID
+            PIDf = re.compile(
+                '\A(Standard[1-9]?|Healthy[ ][A-Z][A-Z].?|[0-9][0-9]+(?![ ][A-Z][A-Z]+)|.*(?=[ ][V][1-3]))')
+            PID = PIDf.search(g)
+            # Add matches to corresponding list if exists
+            if key2 is not None:
+                vl.append(key2.group())
+            else:
+                vl.append(np.nan)
+            if key4 is not None:
+                dill.append(key4.group())
+            else:
+                dill.append(np.nan)
+            if PID is not None:
+                PIDl.append(PID.group())
+            else:
+                PIDl.append(np.nan)
+            # Purge cache
+            re.purge()
+        # Add parsed lists to dataframe
+        data[get_key].insert(loc=1, column='PatientID', value=PIDl)
+        data[get_key].insert(loc=2, column='Replicate/visit', value=vl)
+        data[get_key].insert(loc=3, column='Dilution', value=dill)
+        #fill in missing values in for hospital, Age & gender (plate 11 is missing all these data, so applied"try, except")
+        try:
+            data[get_key]['Hospital '] = data[get_key].groupby('PatientID')['Hospital '].ffill()
+            data[get_key]['Age'] = data[get_key].groupby('PatientID')['Age'].ffill()
+            data[get_key]['Gender'] = data[get_key].groupby('PatientID')['Gender'].ffill()
+        except KeyError:
+            pass
+        #save each plate file as "plate *.txt"
+        data[get_key].to_csv(get_key +'.txt',sep='\t')
+
+# Step 5
+filefunc('Assignment4/06222016 Staph Array Data.xlsx', 'Sample ID')
     
