@@ -124,6 +124,6 @@ def graph_production(dic):
 
 # graph_production(new_columns)
 
-#step 5
+
 
     
