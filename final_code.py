@@ -180,5 +180,5 @@ def filefunc(filedata,coldata):
         data[get_key].to_csv(get_key +'.txt',sep='\t')
 
 # Step 5
-filefunc('Assignment4/06222016 Staph Array Data.xlsx', 'Sample ID')
+filefunc('06222016 Staph Array Data.xlsx', 'Sample ID')
     
