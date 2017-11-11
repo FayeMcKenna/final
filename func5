@@ -1,0 +1,55 @@
+
+from collections import defaultdict
+import pandas as pd
+import re
+import sys
+import numpy as np
+import xlrd
+import matplotlib.pyplot as plt
+data = pd.ExcelFile('06222016 Staph Array Data.xlsx')
+
+data = pd.ExcelFile('06222016 Staph Array Data.xlsx')
+
+
+# Step5 function
+def filefunc(filedata,coldata):
+    data = pd.read_excel(filedata, header=1, sheetname=None) #for each sheet
+    for h in range(0, len(data)):
+        ID = []
+        dilusion = []
+        vol = []
+        get_key = list(data.keys())[h] #sample ID
+        for g in data[get_key].loc[:, coldata]: # Get Visit
+            key1 = re.compile('[V][1-3]') # Dilution
+            key2 = key1.search(g)
+            key3 = re.compile('100*(?![1-9]|[A-Z][ ])')
+            key4 = key3.search(g) #Patient ID
+            PIDf = re.compile(
+                '\A(Standard[1-9]?|Healthy[ ][A-Z][A-Z].?|[0-9][0-9]+(?![ ][A-Z][A-Z]+)|.*(?=[ ][V][1-3]))')
+            PID = PIDf.search(g) #see if matches
+            if key2 is not None:
+                vol.append(key2.group())
+            else:
+                vol.append(np.nan)
+            if key4 is not None:
+                dilusion.append(key4.group())
+            else:
+                dilusion.append(np.nan)
+            if PID is not None:
+                ID.append(PID.group())
+            else:
+                ID.append(np.nan)
+            re.purge() #purch function
+        data[get_key].insert(loc=1, column='PatientID', value=ID) #add to dataframe
+        data[get_key].insert(loc=2, column='Replicate/visit', value=vol)
+        data[get_key].insert(loc=3, column='Dilution', value=dilusion)
+        try: #Missing data
+            data[get_key]['Hospital '] = data[get_key].groupby('PatientID')['Hospital '].ffill()
+            data[get_key]['Age'] = data[get_key].groupby('PatientID')['Age'].ffill()
+            data[get_key]['Gender'] = data[get_key].groupby('PatientID')['Gender'].ffill()
+        except KeyError:
+            pass
+        data[get_key].to_csv(get_key +'.txt',sep='\t') #save
+
+# Step 5
+filefunc('06222016 Staph Array Data.xlsx', 'Sample ID')
