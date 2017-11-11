@@ -1,5 +1,5 @@
-#course final
-#psuedo code
+#course final- Jonathan Abebe, Faye Mckenna, Sandra India
+#pseudo code
 
 #data sheet plot dilusion versus intensity from staph array data via line graph
 #1 read sheet in via panda
