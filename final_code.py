@@ -119,11 +119,62 @@ def graph_production(dic):
                 fig.suptitle(title,fontsize= 14,fontweight = 'bold')
     plt.show()
 
+# step 5 function
+
+data = pd.ExcelFile('06222016 Staph Array Data.xlsx')
+
+VISIT_ID_REGEX = re.compile('[V][1-3]') #compile visits
+PID_REGEX = re.compile('\A(Standard[1-9]?|Healthy[ ][A-Z][A-Z].?|[0-9][0-9]+(?![ ][A-Z][A-Z]+)|.*(?=[ ][V][1-3]))') #compile PID
+DILUTION_REGEX = re.compile('100*(?![1-9]|[A-Z][ ])') #compile dilusion
+
+def populate_empty_cells(sheet_data): #populate empty cells
+    try:
+        sheet_data['Hospital '] = sheet_data.groupby('PatientID')['Hospital '].ffill() 
+        sheet_data['Age'] = sheet_data.groupby('PatientID')['Age'].ffill()
+        sheet_data['Gender'] = sheet_data.groupby('PatientID')['Gender'].ffill()
+    except KeyError:
+        pass
+
+def parse_visit(visit, PIDs, visit_ids, dilutions): #parse by visits
+    visit_id = VISIT_ID_REGEX.search(visit)
+    visit_result = visit_id.group() if visit_id else np.nan
+    visit_ids.append(visit_result)
+
+    PID = PID_REGEX.search(visit) #check matches PID
+    PID_result = PID.group() if PID else np.nan
+    PIDs.append(PID_result)
+
+    dilution = DILUTION_REGEX.search(visit) #check matches dilusion
+    dilution_result = dilution.group() if dilution else np.nan
+    dilutions.append(dilution_result)
+
+    re.purge() # purge function 
+
+def update_sheet(sheet_name, sheet_data, column_header): #update sheet
+    PIDs = []
+    visit_ids = []
+    dilutions = [] 
+
+    for visit in sheet_data.loc[:, column_header]: # Get Visit
+        parse_visit(visit, PIDs, visit_ids, dilutions)
+
+    sheet_data.insert(loc=1, column='PatientID', value=PIDs) #insert each
+    sheet_data.insert(loc=2, column='Replicate/visit', value=visit_ids)
+    sheet_data.insert(loc=3, column='Dilution', value=dilutions)
+
+    populate_empty_cells(sheet_data)
+    sheet_data.to_csv(sheet_name +'.txt',sep='\t')
 
 
+def update_spreadsheet(file_name, column_header): #update spreadsheet
+    sheets = pd.read_excel(file_name, header=1, sheet_name=None)
+    for sheet_name, sheet_data in sheets.items(): # iterate over keys/values at the same time
+        update_sheet(sheet_name, sheet_data, column_header)
 
-# graph_production(new_columns)
-
-
+def main():
+    file_name = '06222016 Staph Array Data.xlsx'
+    column_to_parse = 'Sample ID'
+    update_spreadsheet(file_name, column_to_parse)
+    print(file_name + " updated succesfully")
 
     
